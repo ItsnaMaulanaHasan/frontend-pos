@@ -10,20 +10,29 @@ interface TransactionDetailModalProps {
 }
 
 const TransactionDetailModal = ({ isOpen, customerId, onClose }: TransactionDetailModalProps) => {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [noTransactions, setNoTransactions] = useState(false);
 
   useEffect(() => {
     if (!customerId) return;
 
+    setLoading(true);
+    setTransactions([]);
+    setError("");
+    setNoTransactions(false);
+
     const fetchTransactions = async () => {
       try {
         const response = await fetch(`/api/transactions/customer/${customerId}`);
-        if (!response.ok) throw new Error("Failed to fetch transactions");
-
         const data = await response.json();
-        setTransactions(data);
+
+        if (data.length === 0) {
+          setNoTransactions(true);
+        } else {
+          setTransactions(data);
+        }
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -39,27 +48,28 @@ const TransactionDetailModal = ({ isOpen, customerId, onClose }: TransactionDeta
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Detail Transaksi</h2>
-        {loading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        <h2 className="text-xl font-bold mb-4 text-blue-700">Detail Transaksi</h2>
 
-        <ul>
-          {transactions.map((transaction: any) => (
-            <li key={transaction.id} className="border-b p-2">
-              <p>Total: IDR {transaction.total_price}</p>
-              <p>Tanggal: {new Date(transaction.transaction_date).toLocaleDateString()}</p>
-              <ul>
-                {transaction.TransactionDetails.map((detail: any) => (
-                  <li key={detail.id} className="ml-4 text-gray-700">
-                    {detail.Product.name} (x{detail.quantity}) - IDR {detail.subtotal}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
+        {loading && <p className="text-center text-gray-500">Loading...</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
+        {noTransactions && <p className="text-center text-gray-500">Tidak ada transaksi untuk customer ini.</p>}
 
-        <button onClick={onClose} className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg">
+        {transactions.map((transaction) => (
+          <div key={transaction.id} className="mb-4">
+            <p className="text-blue-600 font-semibold">Total: IDR {parseInt(transaction.total_price).toLocaleString()}</p>
+            <p className="text-blue-600">Tanggal: {new Date(transaction.transaction_date).toLocaleDateString()}</p>
+
+            <ul className="mt-2">
+              {transaction.TransactionDetails.map((detail: any) => (
+                <li key={detail.id} className="ml-4 text-gray-700">
+                  {detail.Product.name} (x{detail.quantity}) - IDR {parseInt(detail.subtotal).toLocaleString()}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        <button onClick={onClose} className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-lg w-full">
           Tutup
         </button>
       </div>

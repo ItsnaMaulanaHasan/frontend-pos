@@ -4,6 +4,10 @@ export async function GET(req: Request, { params }: { params: { customerId: stri
       cache: "no-store",
     });
 
+    if (response.status === 404) {
+      return Response.json([]);
+    }
+
     if (!response.ok) {
       throw new Error(`Error fetching transactions: ${response.statusText}`);
     }
@@ -12,7 +16,7 @@ export async function GET(req: Request, { params }: { params: { customerId: stri
     return Response.json(data);
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    return new Response(JSON.stringify({ message: "Failedd to fetch transactions", error }), {
+    return new Response(JSON.stringify({ message: "Failed to fetch transactions", error }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

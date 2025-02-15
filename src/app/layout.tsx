@@ -1,6 +1,5 @@
-// File: src/app/layout.tsx
 import type { Metadata } from "next";
-import "../globals.css"; // Import global styles
+import "../globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {

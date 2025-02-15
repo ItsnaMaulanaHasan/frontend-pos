@@ -24,7 +24,6 @@ const EditTransactionModal = ({ isOpen, transactionId, onClose }: EditTransactio
 
         const data = await response.json();
 
-        // Transformasi data agar hanya menyimpan produk dan quantity
         const formattedProducts = data[0].TransactionDetails.map((detail: any) => ({
           product_id: detail.Product.id,
           name: detail.Product.name,
