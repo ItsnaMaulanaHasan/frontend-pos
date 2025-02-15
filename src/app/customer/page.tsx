@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -13,10 +14,20 @@ export default function Customer() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [isSearched, setIsSearched] = useState(false);
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
   const [refreshData, setRefreshData] = useState(0);
+
+  const filterCustomer = (customers: any, setCustomer: (data: any) => void) => {
+    if (searchValue) {
+      const newCustomer = customers.filter((i: any) => i.name.toLowerCase().includes(searchValue.toLowerCase()));
+      setCustomer(newCustomer);
+      setIsSearched(false);
+    }
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -27,9 +38,8 @@ export default function Customer() {
           <button onClick={() => setIsAddModalOpen(true)} className="px-4 py-2 bg-blue-500 text-white rounded-lg">
             Add New Customer
           </button>
-          <input type="text" placeholder="Search Customer" className="border p-2 rounded-lg" />
-          <Button text="Search" />
-          <Button text="Filter" />
+          <input type="text" placeholder="Search Customer" className="border p-2 rounded-lg" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
+          <Button text="Search" onClick={() => (searchValue ? setIsSearched(true) : setRefreshData(refreshData + 1))} />
           <Button text="Refresh" onClick={() => setRefreshData(refreshData + 1)} />
         </div>
       </div>
@@ -41,7 +51,7 @@ export default function Customer() {
 
       <DeleteCustomerModal isOpen={isDeleteModalOpen} customerId={selectedCustomerId} onClose={() => setIsDeleteModalOpen(false)} onDeleted={() => setRefreshData(refreshData + 1)} />
 
-      <EditTransactionModal isOpen={isEditModalOpen} transactionId={selectedTransactionId} onClose={() => setIsEditModalOpen(false)} />
+      <EditTransactionModal isOpen={isEditModalOpen} transactionId={selectedTransactionId} onCustomerEdited={() => setRefreshData(refreshData + 1)} onClose={() => setIsEditModalOpen(false)} />
 
       {/* Tabel Customer */}
       <CustomerTable
@@ -58,6 +68,8 @@ export default function Customer() {
           setSelectedTransactionId(transactionId);
           setIsEditModalOpen(true);
         }}
+        onSearch={filterCustomer}
+        isSearched={isSearched}
       />
     </div>
   );

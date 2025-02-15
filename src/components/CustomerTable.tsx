@@ -7,29 +7,39 @@ interface CustomerTableProps {
   onDetail: (customerId: number) => void;
   onDelete: (customerId: number) => void;
   onEdit: (transactionId: number) => void;
+  onSearch: (searchValue: string, setCustomer: (data: any) => void) => void;
+  isSearched: boolean;
 }
 
-const CustomerTable = ({ onDetail, onDelete, onEdit }: CustomerTableProps) => {
-  const [customers, setCustomers] = useState([]);
+const CustomerTable = ({ onDetail, onDelete, onEdit, onSearch, isSearched }: CustomerTableProps) => {
+  const [customers, setCustomers] = useState([]) as any;
+  const [filterCustomers, setFilterCustomers] = useState([]) as any;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await fetch("/api/customers");
-        if (!response.ok) throw new Error("Gagal mengambil data");
-        const data = await response.json();
-        setCustomers(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch("/api/customers");
+      if (!response.ok) throw new Error("Gagal mengambil data");
+      const data = await response.json();
+      setCustomers(data);
+      setFilterCustomers(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchCustomers();
   }, []);
+
+  useEffect(() => {
+    if (isSearched) {
+      onSearch(customers, setFilterCustomers);
+    }
+  }, [isSearched]);
 
   if (loading) return <p className="text-center p-4">Loading...</p>;
   if (error) return <p className="text-center p-4 text-red-500">Error: {error}</p>;
@@ -46,7 +56,7 @@ const CustomerTable = ({ onDetail, onDelete, onEdit }: CustomerTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {customers.map((customer: any) => (
+        {filterCustomers.map((customer: any) => (
           <tr key={customer.id} className="border-t">
             <td className="p-3 border">{customer.name}</td>
             <td className="p-3 border">{customer.level}</td>
@@ -57,7 +67,7 @@ const CustomerTable = ({ onDetail, onDelete, onEdit }: CustomerTableProps) => {
                 Detail
               </button>{" "}
               |
-              <button onClick={() => onEdit(1)} className="text-yellow-500">
+              <button onClick={() => onEdit(customer.id)} className="text-yellow-500">
                 Edit
               </button>{" "}
               |

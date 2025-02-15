@@ -6,10 +6,11 @@ import { useState, useEffect } from "react";
 interface EditTransactionModalProps {
   isOpen: boolean;
   transactionId: number | null;
+  onCustomerEdited: () => void;
   onClose: () => void;
 }
 
-const EditTransactionModal = ({ isOpen, transactionId, onClose }: EditTransactionModalProps) => {
+const EditTransactionModal = ({ isOpen, transactionId, onCustomerEdited, onClose }: EditTransactionModalProps) => {
   const [products, setProducts] = useState<{ product_id: number; name: string; quantity: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,8 +20,7 @@ const EditTransactionModal = ({ isOpen, transactionId, onClose }: EditTransactio
 
     const fetchTransactionDetails = async () => {
       try {
-        const response = await fetch(`/api/transactions/edit/${transactionId}`);
-        if (!response.ok) throw new Error("Failed to fetch transaction details");
+        const response = await fetch(`/api/transactions/customer/${transactionId}`);
 
         const data = await response.json();
 
@@ -61,6 +61,7 @@ const EditTransactionModal = ({ isOpen, transactionId, onClose }: EditTransactio
 
       if (!response.ok) throw new Error("Failed to update transaction");
 
+      onCustomerEdited();
       onClose();
     } catch (error) {
       console.error(error);
